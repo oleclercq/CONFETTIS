@@ -11,7 +11,7 @@
 // ========================================================================
 #define NB_CANON		8
 #define MAX_TEMPO_RLY	900 // en nb de 10ms
-#define MAX_TEMPO_LED	900	// en nb de 10ms
+#define MAX_TEMPO_LED	50	// en nb de 10ms
 
 // ========================================================================
 // DESFINIIONS DES TYPES      
@@ -27,12 +27,12 @@ typedef struct 	{	ENUM_ETAT_CANON  eEtatCanon;      // Etat en cours.
 					        uint16_t tempoLed;	// Nb de pas encore a effectuer pour �teindre la led
 					        uint16_t tempoRelay;
 				} ST_CANON;
-				
+
+
+      
 // ========================================================================
 // VARIABLES GLOBALES
 // ========================================================================
-// ************************************************************
-// DEFINITIONS DES VARAIBLES
 //! init tableau des producteurs cabl� pour un hard V2 	
 ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF,33, 53, 2, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									                {CANON_OFF, CANON_LED_OFF, 34, 46, 3, MAX_TEMPO_LED, MAX_TEMPO_RLY},
@@ -42,7 +42,24 @@ ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF,33, 53, 2, MAX_TEMPO_
 									                {CANON_OFF, CANON_LED_OFF, 38, 11, 7, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									                {CANON_OFF, CANON_LED_OFF, 39, 12, 8, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									                {CANON_OFF, CANON_LED_OFF, 40, 13, 9, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
-								} ;  
+								                } ;  
+
+
+// ========================================================================
+// PROTOTYPAGES DES FONCTIONS
+// ========================================================================
+void fnct_read_bt(int i) ;
+void fnct_canon_on(int i) ;
+void fnct_canon_off(int i) ;
+void fnct_canon_led_off(int i);
+void fnct_canon_led_on(int i);
+void fnct_canon_led_off_cli(int i);
+void fnct_canon_led_oon_cli(int i);
+
+void TEST_ENTREES() ;
+void TEST_LED_ET_RELAYS() ;
+
+
 
 /* ************************************************************************ */
 // /* configuration initial,                                                */
@@ -65,7 +82,7 @@ void setup()
     tabCanon[i].eEtatCanon = CANON_READY ;
     
     digitalWrite(tabCanon[i].pinLeD,HIGH);
-    tabCanon[i].eEtatLed = CANON_LED_ON ;
+    tabCanon[i].eEtatLed = CANON_LED_CLI_OFF ;  // Prochain état
 	}
  
 
@@ -102,17 +119,39 @@ ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
       bool val;
       for (uint8_t i=0; i<NB_CANON; i++)		
       {
-        if ( tabCanon[i].eEtatCanon == CANON_READY)
-        {
-          val = digitalRead(tabCanon[i].bpPin) ;
-          if (val) // detection appuie
-          {
-            digitalWrite(tabCanon[i].pinRelayCanon,HIGH); // on active les cannons
-            tabCanon[i].eEtatCanon = CANON_ON;
-          }
+        switch ( tabCanon[i].eEtatCanon) {
+          case CANON_READY :  fnct_read_bt(i);   break ;
+          case CANON_ON  :    fnct_canon_on(i);  break ;
+          case CANON_OFF :    fnct_canon_off(i);  break ;
+          default :           break ;                                 
         }
-        else if ( tabCanon[i].eEtatCanon == CANON_ON)
-        {
+      }
+}
+
+
+
+/* ************************************************** */
+// RECOPIE ENTRESS SUR SORTIES
+/* ************************************************** */
+void fnct_read_bt(int i)
+{
+  bool val; 
+  val = digitalRead(tabCanon[i].bpPin) ;
+  if (val) // detection appuie
+  {
+    digitalWrite(tabCanon[i].pinRelayCanon,HIGH); // on active les cannons
+    tabCanon[i].eEtatCanon = CANON_ON;
+
+    digitalWrite(tabCanon[i].pinLeD,HIGH); // on active les cannons
+    tabCanon[i].eEtatLed = CANON_LED_CLI_ON;
+  }
+}
+
+/* ************************************************** */
+// RECOPIE ENTRESS SUR SORTIES
+/* ************************************************** */
+void fnct_canon_on(int i)
+{
             // on décremente la temporisation du cannon
             if ( tabCanon[i].tempoRelay >0 )
             {
@@ -123,44 +162,67 @@ ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
                 digitalWrite(tabCanon[i].pinRelayCanon,LOW); // on active les cannons
                 tabCanon[i].eEtatCanon = CANON_OFF; // Le passage a READY ne se fera que sur app du RESET
                 tabCanon[i].tempoRelay = MAX_TEMPO_RLY ;
+                tabCanon[i].eEtatLed   = CANON_LED_OFF ;
             }
             // on fait clignoter les led
-        }
-      }
+            // c'est la fin du clignotement de la led qui fait arreter le canon
+            switch( tabCanon[i].eEtatLed)
+            {
+              case CANON_LED_OFF :      fnct_canon_led_off(i);      break;
+              case CANON_LED_ON  :      fnct_canon_led_on(i);       break;
+              case CANON_LED_CLI_ON :   fnct_canon_led_on_cli(i);  break;
+              case CANON_LED_CLI_OFF :  fnct_canon_led_off_cli(i);   break;
+              default:                  break;
+            }
+}
 
-      /*
-      if (tabCanon[i].eEtat == CANON_FEUX)
-      {
-        if (tabCanon[i].tempoRestanteRelay > 0)
-        {
-          tabCanon[i].tempoRestanteRelay--;
-        } 
-        else
-        {
-          tabCanon[i].eEtat == CANON_WAIT;
-          tabCanon[i].tempoRestanteRelay = MAX_TEMPO_RLY ;
-          digitalWrite(tabCanon[i].pinRelayCanon,LOW);
-        }
+/* ************************************************** */
+/* ************************************************** */
+void fnct_canon_led_off(int i)
+{
+  digitalWrite(tabCanon[i].pinLeD,LOW);
+}
 
-        if (tabCanon[i].tempoRestanteLed > 0)
-        {
-            tabCanon[i].tempoRestanteLed--;
-        }
-        else
-        {
-           tabCanon[i].tempoRestanteLed = MAX_TEMPO_LED;
-           digitalWrite(tabCanon[i].pinLeD,LOW);
-        }
-      } 
-      else if ( !digitalRead(tabCanon[i].bpPin) == LOW)	// Lecture de toutes les entr�es
-		  {
-			// BT_Appuy�, on active le relay et la led
-			//tabCanon[i].eEtat = CANON_FEUX;
-			digitalWrite(tabCanon[i].pinRelayCanon,HIGH);
-		} else
-    {}
-	}
- */
+/* ************************************************** */
+/* ************************************************** */
+void fnct_canon_led_on(int i)
+{
+  digitalWrite(tabCanon[i].pinLeD,HIGH);
+}
+
+/* ************************************************** */
+/* ************************************************** */
+void fnct_canon_led_off_cli(int i)
+{
+    if ( tabCanon[i].tempoLed > 0) {
+        tabCanon[i].tempoLed --;
+    } else {
+      digitalWrite(tabCanon[i].pinLeD,HIGH);
+      tabCanon[i].eEtatLed = CANON_LED_CLI_ON ;
+      tabCanon[i].tempoLed = MAX_TEMPO_LED;
+    }
+    
+}
+
+/* ************************************************** */
+/* ************************************************** */
+void fnct_canon_led_on_cli(int i)
+{
+    if ( tabCanon[i].tempoLed > 0) {
+        tabCanon[i].tempoLed --;
+    } else {
+      digitalWrite(tabCanon[i].pinLeD,LOW);
+      tabCanon[i].eEtatLed = CANON_LED_CLI_OFF ;
+      tabCanon[i].tempoLed = MAX_TEMPO_LED;
+    }
+    
+}
+
+/* ************************************************** */
+// CANON OFF
+/* ************************************************** */
+void fnct_canon_off(int i)
+{
 }
 
 /* ************************************************** */
