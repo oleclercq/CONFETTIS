@@ -13,6 +13,8 @@
 #define MAX_TEMPO_RLY	900 // en nb de 10ms
 #define MAX_TEMPO_LED	50	// en nb de 10ms
 
+#define  PIN_BT_RESET 32
+
 // ========================================================================
 // DESFINIIONS DES TYPES      
 // ========================================================================
@@ -126,6 +128,20 @@ ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
           default :           break ;                                 
         }
       }
+
+      // Lecture du Bt RESET
+      if (!digitalRead(PIN_BT_RESET))
+      {
+        for (uint8_t i=0; i<NB_CANON; i++)    
+        {
+          // tous les connons passe en ready
+          digitalWrite(tabCanon[i].pinRelayCanon,LOW);
+          tabCanon[i].eEtatCanon = CANON_READY;
+          
+          digitalWrite(tabCanon[i].pinLeD,HIGH);
+          tabCanon[i].eEtatLed = CANON_LED_ON;
+        }
+    }
 }
 
 
@@ -137,7 +153,7 @@ void fnct_read_bt(int i)
 {
   bool val; 
   val = digitalRead(tabCanon[i].bpPin) ;
-  if (val) // detection appuie
+  if (!val) // detection appuie
   {
     digitalWrite(tabCanon[i].pinRelayCanon,HIGH); // on active les cannons
     tabCanon[i].eEtatCanon = CANON_ON;
