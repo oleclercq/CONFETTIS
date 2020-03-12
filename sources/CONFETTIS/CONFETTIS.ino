@@ -3,6 +3,9 @@
 	loma.fr
 */
 
+
+#define TIMER_500MS 100
+
 // ========================================================================
 // DESFINIIONS
 // ========================================================================
@@ -13,13 +16,16 @@
 // ========================================================================
 // DESFINIIONS DES TYPES      
 // ========================================================================
-typedef enum { CANON_WAIT, CANON_FEUX, CANON_DECOMPTE, CANON_VIDE  } ENUM_ETAT;
-typedef struct 	{	ENUM_ETAT  eEtat;			// Etat en cours.
-					uint8_t bpPin;			// Pin de l'arduino ou est branché le bouton poussoir	
-					uint8_t pinLeD;			// pin de l'arduiuino ou est brancher la led du bouton
-					uint8_t pinRelayCanon;
-					uint16_t tempoRestanteLed;	// Nb de pas encore a effectuer pour éteindre la led
-					uint16_t tempoRestanteRelay;
+typedef enum { CANON_READY, CANON_ON, CANON_OFF  } ENUM_ETAT_CANON;
+typedef enum { CANON_LED_OFF, CANON_LED_ON, CANON_LED_CLI_ON, CANON_LED_CLI_OFF  } ENUM_ETAT_LED;
+
+typedef struct 	{	ENUM_ETAT_CANON  eEtatCanon;      // Etat en cours.
+                  ENUM_ETAT_LED    eEtatLed;        // Etat en cours.
+					        uint8_t bpPin;			// Pin de l'arduino ou est branchï¿½ le bouton poussoir	
+					        uint8_t pinLeD;			// pin de l'arduiuino ou est brancher la led du bouton
+					        uint8_t pinRelayCanon;
+					        uint16_t tempoLed;	// Nb de pas encore a effectuer pour ï¿½teindre la led
+					        uint16_t tempoRelay;
 				} ST_CANON;
 				
 // ========================================================================
@@ -27,15 +33,15 @@ typedef struct 	{	ENUM_ETAT  eEtat;			// Etat en cours.
 // ========================================================================
 // ************************************************************
 // DEFINITIONS DES VARAIBLES
-//! init tableau des producteurs cablé pour un hard V2 	
-ST_CANON tabCanon[NB_CANON] = 	{	{CANON_WAIT, 20, 50, 58, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_WAIT, 21, 51, 59, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_WAIT, 22, 52, 60, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_WAIT, 23, 53, 61, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_WAIT, 24, 54, 62, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_WAIT, 25, 55, 63, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_WAIT, 26, 56, 64, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_WAIT, 27, 57, 65, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas dépasser ni egal à ENTREENUMERIQUE 19
+//! init tableau des producteurs cablï¿½ pour un hard V2 	
+ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF,33, 53, 2, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									                {CANON_OFF, CANON_LED_OFF, 34, 46, 3, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									                {CANON_OFF, CANON_LED_OFF, 35, 45, 4, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									                {CANON_OFF, CANON_LED_OFF, 36, 44, 5, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									                {CANON_OFF, CANON_LED_OFF, 37, 10, 6, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									                {CANON_OFF, CANON_LED_OFF, 38, 11, 7, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									                {CANON_OFF, CANON_LED_OFF, 39, 12, 8, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									                {CANON_OFF, CANON_LED_OFF, 40, 13, 9, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas dï¿½passer ni egal ï¿½ ENTREENUMERIQUE 19
 								} ;  
 
 /* ************************************************************************ */
@@ -51,11 +57,17 @@ void setup()
 //  ================================================================================
 //  configuration des Pinouts de l'arduino
 	for (uint8_t i=0; i<NB_CANON; i++)		{
-		pinMode(tabCanon[i].bpPin, 			INPUT_PULLUP);
+		pinMode(tabCanon[i].bpPin, 			INPUT);
 		pinMode(tabCanon[i].pinLeD, 		OUTPUT);
 		pinMode(tabCanon[i].pinRelayCanon,	OUTPUT);
-		
+
+    digitalWrite(tabCanon[i].pinRelayCanon,LOW);
+    tabCanon[i].eEtatCanon = CANON_READY ;
+    
+    digitalWrite(tabCanon[i].pinLeD,HIGH);
+    tabCanon[i].eEtatLed = CANON_LED_ON ;
 	}
+ 
 
 //  ================================================================================
 //  PARAMETRAGE DU TIMER 1 16BIT
@@ -65,39 +77,124 @@ void setup()
 	TCCR1C = 0; 												// not forcing output compare
 	TCNT1 = 0; 													// set timer counter initial value (16 bit value)
 	
-	OCR1A = 2500;												// Closer to one second than value above, 2500 pas de 4µs ca fait 10ms 
+	OCR1A = 2500;												// Closer to one second than value above, 2500 pas de 4ï¿½s ca fait 10ms 
 	TIMSK1 = 1 << OCIE1A; 										// Enable timer compare match 1A interrupt
 	sei(); 														// Enable interrupts
 }
 
 /* ************************************************************************ */
-/* PGM Principal, lecture en permanance les entrées
+/* PGM Principal, lecture en permanance les entrï¿½es
 /* ************************************************************************ */
 void loop()
 {
 }
-
 
 /* ************************************************************************ */
 /* ON RENTRE DANS CE TIMER TOUTES LES 10ms
 /* ************************************************************************ */
 ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
 {
-	//Lecture des Inters
-	for (uint8_t i=0; i<NB_CANON; i++)		{
-		if ( !digitalRead(tabCanon[i].bpPin) == LOW)	// Lecture de toutes les entrées
-		{
-			// BT_Appuyé, on active le relay et la led
-			tabCanon[i].eEtat = CANON_FEUX;
-			digitalWrite(tabCanon[i].pinRelayCanon),HIGH)
-		}
-		
-		
-		
-		
+  
+  // TEST_LED_ET_RELAYS(); //==> OK
+  // TEST_ENTREES();       //==> OK
+  
+  // Lecture des Inters
+      bool val;
+      for (uint8_t i=0; i<NB_CANON; i++)		
+      {
+        if ( tabCanon[i].eEtatCanon == CANON_READY)
+        {
+          val = digitalRead(tabCanon[i].bpPin) ;
+          if (val) // detection appuie
+          {
+            digitalWrite(tabCanon[i].pinRelayCanon,HIGH); // on active les cannons
+            tabCanon[i].eEtatCanon = CANON_ON;
+          }
+        }
+        else if ( tabCanon[i].eEtatCanon == CANON_ON)
+        {
+            // on dÃ©cremente la temporisation du cannon
+            if ( tabCanon[i].tempoRelay >0 )
+            {
+              tabCanon[i].tempoRelay--;
+            }
+            else
+            {
+                digitalWrite(tabCanon[i].pinRelayCanon,LOW); // on active les cannons
+                tabCanon[i].eEtatCanon = CANON_OFF; // Le passage a READY ne se fera que sur app du RESET
+                tabCanon[i].tempoRelay = MAX_TEMPO_RLY ;
+            }
+            // on fait clignoter les led
+        }
+      }
+
+      /*
+      if (tabCanon[i].eEtat == CANON_FEUX)
+      {
+        if (tabCanon[i].tempoRestanteRelay > 0)
+        {
+          tabCanon[i].tempoRestanteRelay--;
+        } 
+        else
+        {
+          tabCanon[i].eEtat == CANON_WAIT;
+          tabCanon[i].tempoRestanteRelay = MAX_TEMPO_RLY ;
+          digitalWrite(tabCanon[i].pinRelayCanon,LOW);
+        }
+
+        if (tabCanon[i].tempoRestanteLed > 0)
+        {
+            tabCanon[i].tempoRestanteLed--;
+        }
+        else
+        {
+           tabCanon[i].tempoRestanteLed = MAX_TEMPO_LED;
+           digitalWrite(tabCanon[i].pinLeD,LOW);
+        }
+      } 
+      else if ( !digitalRead(tabCanon[i].bpPin) == LOW)	// Lecture de toutes les entrï¿½es
+		  {
+			// BT_Appuyï¿½, on active le relay et la led
+			//tabCanon[i].eEtat = CANON_FEUX;
+			digitalWrite(tabCanon[i].pinRelayCanon,HIGH);
+		} else
+    {}
 	}
-	
-	
-	
+ */
 }
-	
+
+/* ************************************************** */
+// RECOPIE ENTRESS SUR SORTIES
+/* ************************************************** */
+void TEST_ENTREES()
+{
+  bool val;
+  for (uint8_t i=0; i<NB_CANON; i++)   
+  {
+    val = digitalRead(tabCanon[i].bpPin) ;
+    digitalWrite(tabCanon[i].pinLeD,val);
+    digitalWrite(tabCanon[i].pinRelayCanon,val);
+  }
+}
+
+/* ************************************************** */
+/* ************************************************** */
+void TEST_LED_ET_RELAYS()
+{
+// /* TEST DES LEDS et DES  RELAYS ==> OK 
+  static int cmp = TIMER_500MS; // 50x 10ms = 0.5s
+  static int etat = 1;
+  if (cmp-- == 0)
+  { for (uint8_t i=0; i<NB_CANON; i++)   {
+    if(etat){
+      digitalWrite(tabCanon[i].pinLeD,HIGH);
+      digitalWrite(tabCanon[i].pinRelayCanon,LOW);
+    } else {
+      digitalWrite(tabCanon[i].pinLeD,LOW);
+      digitalWrite(tabCanon[i].pinRelayCanon,HIGH);
+        }
+    }
+    etat = 1-etat;
+    cmp = TIMER_500MS;
+  }
+}
