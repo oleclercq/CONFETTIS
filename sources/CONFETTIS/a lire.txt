@@ -1,0 +1,7 @@
+A lire avant realisation.
+Sur le schéma, c'est les branchements actuelllemnts codés.
+ (carte d'essais que j'ai)
+ 
+ pour la réalisation, il est préférable de faire le cablage idéal, et de modifier le soft ensuite, pour adapter les ENTREES SORTIES
+ - Ne pas brancher des LED et d'inters sur les  D2 D3 ... (toute les D  gauches) D0 D1 et D13.
+ - 
