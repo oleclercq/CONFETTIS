@@ -36,14 +36,14 @@ typedef struct 	{	ENUM_ETAT_CANON  eEtatCanon;      // Etat en cours.
 // VARIABLES GLOBALES
 // ========================================================================
 //! init tableau des producteurs cabl� pour un hard V2 	
-ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 34, 46, 3, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 35, 45, 4, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 36, 44, 5, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 37, 10, 6, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 38, 11, 7, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 39, 12, 8, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 40, 13, 9, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
+ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 34, 46, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 35, 45, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 36, 44, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 37, 10, 30, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 38, 11, 32, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 39, 12, 34, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 40, 13, 38, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
 								} ;  
 
 
@@ -58,6 +58,7 @@ void fnct_canon_led_on(int i);
 void fnct_canon_led_off_cli(int i);
 void fnct_canon_led_oon_cli(int i);
 
+void PGM_NORMAL();
 void TEST_ENTREES() ;
 void TEST_LED_ET_RELAYS() ;
 
@@ -114,10 +115,16 @@ void loop()
 ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
 {
   
-  // TEST_LED_ET_RELAYS(); //==> OK
+     TEST_LED_ET_RELAYS(); //==> OK
   // TEST_ENTREES();       //==> OK
-  
-  // Lecture des Inters
+  // PGM_NORMAL();         //==> OK
+}
+
+/* ************************************************** */
+// RECOPIE ENTRESS SUR SORTIES
+/* ************************************************** */
+void PGM_NORMAL()
+{
       bool val;
       for (uint8_t i=0; i<NB_CANON; i++)		
       {
@@ -143,8 +150,6 @@ ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
         }
     }
 }
-
-
 
 /* ************************************************** */
 // RECOPIE ENTRESS SUR SORTIES
