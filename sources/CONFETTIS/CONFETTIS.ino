@@ -12,8 +12,8 @@
 #define NB_CANON		8
 #define MAX_TEMPO_RLY	900 // en nb de 10ms
 #define MAX_TEMPO_LED	50	// en nb de 10ms
+#define PIN_BT_RESET 	32
 
-#define  PIN_BT_RESET 32
 
 // ========================================================================
 // DESFINIIONS DES TYPES      
@@ -36,15 +36,28 @@ typedef struct 	{	ENUM_ETAT_CANON  eEtatCanon;      // Etat en cours.
 // VARIABLES GLOBALES
 // ========================================================================
 //! init tableau des producteurs cabl� pour un hard V2 	
-ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 34, 46, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 35, 45, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 36, 44, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+//#define MODE_OLQ
+#ifdef _MODE_OLQ
+ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 34, 46, 3, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 35, 45, 4, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 36, 44, 5, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 37, 10, 6, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 38, 11, 7, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 39, 12, 8, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 40, 13, 9, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
+								} ;  
+#else
+ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 6, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 34, 7, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 35, 8, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},
+									{CANON_OFF, CANON_LED_OFF, 36, 9, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									{CANON_OFF, CANON_LED_OFF, 37, 10, 30, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									{CANON_OFF, CANON_LED_OFF, 38, 11, 32, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									{CANON_OFF, CANON_LED_OFF, 39, 12, 34, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 40, 13, 38, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
-								} ;  
+									{CANON_OFF, CANON_LED_OFF, 40, 14, 36, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
+								} ;
+#endif
 
 
 // ========================================================================
@@ -61,6 +74,7 @@ void fnct_canon_led_oon_cli(int i);
 void PGM_NORMAL();
 void TEST_ENTREES() ;
 void TEST_LED_ET_RELAYS() ;
+void TEST_LED_ET_RELAYS_CHENILLARD();
 
 
 
@@ -114,8 +128,8 @@ void loop()
 /* ************************************************************************ */
 ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
 {
-  
-     TEST_LED_ET_RELAYS(); //==> OK
+  TEST_LED_ET_RELAYS_CHENILLARD();
+  // TEST_LED_ET_RELAYS(); //==> OK
   // TEST_ENTREES();       //==> OK
   // PGM_NORMAL();         //==> OK
 }
@@ -280,4 +294,28 @@ void TEST_LED_ET_RELAYS()
     etat = 1-etat;
     cmp = TIMER_500MS;
   }
+}
+
+/* ************************************************** */
+/* ************************************************** */
+void TEST_LED_ET_RELAYS_CHENILLARD()
+{
+	static int cmp = TIMER_500MS; // 50x 10ms = 0.5s
+	static int etat = 1;
+	static int pos = 0;
+  if (cmp-- == 0)
+  {
+	  for (uint8_t i=0; i<NB_CANON; i++)   {
+		  digitalWrite(tabCanon[i].pinLeD,LOW);
+		  digitalWrite(tabCanon[i].pinRelayCanon,LOW);
+	  }
+		digitalWrite(tabCanon[pos].pinLeD,HIGH);  digitalWrite(tabCanon[pos].pinRelayCanon,HIGH); 
+		pos++;
+		if (pos == 8)
+		{
+			pos = 0;
+		}
+		// etat = 1-etat;
+		cmp = TIMER_500MS;
+	}
 }
