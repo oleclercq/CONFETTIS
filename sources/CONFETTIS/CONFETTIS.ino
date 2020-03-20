@@ -96,7 +96,7 @@ void setup()
 //  ================================================================================
 //  configuration des Pinouts de l'arduino
 	for (uint8_t i=0; i<NB_CANON; i++)		{
-		pinMode(tabCanon[i].bpPin, 			INPUT);
+		pinMode(tabCanon[i].bpPin, 			INPUT_PULLUP);
 		pinMode(tabCanon[i].pinLeD, 		OUTPUT);
 		pinMode(tabCanon[i].pinRelayCanon,	OUTPUT);
 
@@ -312,9 +312,9 @@ void TEST_LED_ET_RELAYS_CHENILLARD()
   {
 	  for (uint8_t i=0; i<NB_CANON; i++)   {
 		  digitalWrite(tabCanon[i].pinLeD,LOW);
-		  digitalWrite(tabCanon[i].pinRelayCanon,LOW);
+		  digitalWrite(tabCanon[i].pinRelayCanon,HIGH);
 	  }
-		digitalWrite(tabCanon[pos].pinLeD,HIGH);  digitalWrite(tabCanon[pos].pinRelayCanon,HIGH); 
+		digitalWrite(tabCanon[pos].pinLeD,LOW);  digitalWrite(tabCanon[pos].pinRelayCanon,HIGH); 
 		pos++;
 		if (pos == 8)
 		{
