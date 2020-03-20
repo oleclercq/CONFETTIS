@@ -48,14 +48,19 @@ ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO
 									{CANON_OFF, CANON_LED_OFF, 40, 13, 9, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
 								} ;  
 #else
-ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 6, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 34, 7, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 35, 8, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 36, 9, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 37, 10, 30, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 38, 11, 32, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 39, 12, 34, MAX_TEMPO_LED, MAX_TEMPO_RLY},
-									{CANON_OFF, CANON_LED_OFF, 40, 14, 36, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
+//                                                              /----------- Colonne A affectation Num des pin pour les Bt poussoirs    
+//                                                              |   /------- Colonne B affectation Num des pin pour les LED    
+//                                                              |   |   /--  Colonne C affectation Num des pin pour le relay
+//                                                              A   B   C
+ST_CANON tabCanon[NB_CANON] = 	{
+                                    {CANON_OFF, CANON_LED_OFF, 33,  6, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 1
+                                    {CANON_OFF, CANON_LED_OFF, 34,  7, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},   // Channel 2
+                                    {CANON_OFF, CANON_LED_OFF, 35,  8, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 3
+                                    {CANON_OFF, CANON_LED_OFF, 36,  9, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 4
+                                    {CANON_OFF, CANON_LED_OFF, 37, 10, 30, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 5
+                                    {CANON_OFF, CANON_LED_OFF, 38, 11, 32, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 6
+                                    {CANON_OFF, CANON_LED_OFF, 39, 12, 34, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 7
+                                    {CANON_OFF, CANON_LED_OFF, 40, 14, 36, MAX_TEMPO_LED, MAX_TEMPO_RLY}	// Channel 8
 								} ;
 #endif
 
