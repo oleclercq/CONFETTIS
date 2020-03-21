@@ -3,7 +3,7 @@
 	loma.fr
 */
 
-
+#define DEBUG_MODE
 #define TIMER_500MS 100
 
 // ========================================================================
@@ -14,6 +14,10 @@
 #define MAX_TEMPO_LED	50	// en nb de 10ms
 #define PIN_BT_RESET 	32
 
+#define LED_ON		HIGH
+#define LED_OFF		LOW
+#define RELAY_ON	LOW
+#define RELAY_OFF	HIGH
 
 // ========================================================================
 // DESFINIIONS DES TYPES      
@@ -35,8 +39,7 @@ typedef struct 	{	ENUM_ETAT_CANON  eEtatCanon;      // Etat en cours.
 // ========================================================================
 // VARIABLES GLOBALES
 // ========================================================================
-//! init tableau des producteurs cabl� pour un hard V2 	
-//#define MODE_OLQ
+//#define _MODE_OLQ
 #ifdef _MODE_OLQ
 ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									{CANON_OFF, CANON_LED_OFF, 34, 46, 3, MAX_TEMPO_LED, MAX_TEMPO_RLY},
@@ -53,14 +56,14 @@ ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO
 //                                                              |   |   /--  Colonne C affectation Num des pin pour le relay
 //                                                              A   B   C
 ST_CANON tabCanon[NB_CANON] = 	{
-                                    {CANON_OFF, CANON_LED_OFF, 33,  6, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 1
-                                    {CANON_OFF, CANON_LED_OFF, 34,  7, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},   // Channel 2
-                                    {CANON_OFF, CANON_LED_OFF, 35,  8, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 3
-                                    {CANON_OFF, CANON_LED_OFF, 36,  9, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 4
-                                    {CANON_OFF, CANON_LED_OFF, 37, 10, 30, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 5
-                                    {CANON_OFF, CANON_LED_OFF, 38, 11, 32, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 6
-                                    {CANON_OFF, CANON_LED_OFF, 39, 12, 34, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 7
-                                    {CANON_OFF, CANON_LED_OFF, 40, 14, 36, MAX_TEMPO_LED, MAX_TEMPO_RLY}	// Channel 8
+                                    {CANON_OFF, CANON_LED_OFF, 14,  4, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 1
+                                    {CANON_OFF, CANON_LED_OFF, 15,  5, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},   // Channel 2
+                                    {CANON_OFF, CANON_LED_OFF, 16,  6, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 3
+                                    {CANON_OFF, CANON_LED_OFF, 17,  7, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 4
+                                    {CANON_OFF, CANON_LED_OFF, 18,  8, 30, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 5
+                                    {CANON_OFF, CANON_LED_OFF, 19,  9, 32, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 6
+                                    {CANON_OFF, CANON_LED_OFF, 20, 10, 34, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 7
+                                    {CANON_OFF, CANON_LED_OFF, 21, 11, 36, MAX_TEMPO_LED, MAX_TEMPO_RLY}	// Channel 8
 								} ;
 #endif
 
@@ -100,10 +103,10 @@ void setup()
 		pinMode(tabCanon[i].pinLeD, 		OUTPUT);
 		pinMode(tabCanon[i].pinRelayCanon,	OUTPUT);
 
-    digitalWrite(tabCanon[i].pinRelayCanon,LOW);
+    digitalWrite(tabCanon[i].pinRelayCanon,RELAY_OFF);
     tabCanon[i].eEtatCanon = CANON_READY ;
     
-    digitalWrite(tabCanon[i].pinLeD,HIGH);
+    digitalWrite(tabCanon[i].pinLeD,LED_ON);
     tabCanon[i].eEtatLed = CANON_LED_CLI_OFF ;  // Prochain état
 	}
  
@@ -133,10 +136,13 @@ void loop()
 /* ************************************************************************ */
 ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
 {
-  TEST_LED_ET_RELAYS_CHENILLARD();
-  // TEST_LED_ET_RELAYS(); //==> OK
-  // TEST_ENTREES();       //==> OK
-  // PGM_NORMAL();         //==> OK
+// SEULEMENT UNE SEULE FONCTION DOIT ETRE APPELE ICI
+// LES TROIS PREMIERES, C EST POUR DU TEST
+	
+//	TEST_LED_ET_RELAYS_CHENILLARD();
+//  TEST_LED_ET_RELAYS(); //==> OK
+    TEST_ENTREES();       //==> OK
+//  PGM_NORMAL();         //==> OK
 }
 
 /* ************************************************** */
@@ -161,10 +167,10 @@ void PGM_NORMAL()
         for (uint8_t i=0; i<NB_CANON; i++)    
         {
           // tous les connons passe en ready
-          digitalWrite(tabCanon[i].pinRelayCanon,LOW);
+          digitalWrite(tabCanon[i].pinRelayCanon,RELAY_OFF);
           tabCanon[i].eEtatCanon = CANON_READY;
           
-          digitalWrite(tabCanon[i].pinLeD,HIGH);
+          digitalWrite(tabCanon[i].pinLeD,LED_ON);
           tabCanon[i].eEtatLed = CANON_LED_ON;
         }
     }
@@ -182,7 +188,7 @@ void fnct_read_bt(int i)
     digitalWrite(tabCanon[i].pinRelayCanon,HIGH); // on active les cannons
     tabCanon[i].eEtatCanon = CANON_ON;
 
-    digitalWrite(tabCanon[i].pinLeD,HIGH); // on active les cannons
+    digitalWrite(tabCanon[i].pinLeD,LED_ON); // on active les cannons
     tabCanon[i].eEtatLed = CANON_LED_CLI_ON;
   }
 }
@@ -220,14 +226,14 @@ void fnct_canon_on(int i)
 /* ************************************************** */
 void fnct_canon_led_off(int i)
 {
-  digitalWrite(tabCanon[i].pinLeD,LOW);
+  digitalWrite(tabCanon[i].pinLeD,LED_OFF);
 }
 
 /* ************************************************** */
 /* ************************************************** */
 void fnct_canon_led_on(int i)
 {
-  digitalWrite(tabCanon[i].pinLeD,HIGH);
+  digitalWrite(tabCanon[i].pinLeD,LED_ON);
 }
 
 /* ************************************************** */
@@ -237,7 +243,7 @@ void fnct_canon_led_off_cli(int i)
     if ( tabCanon[i].tempoLed > 0) {
         tabCanon[i].tempoLed --;
     } else {
-      digitalWrite(tabCanon[i].pinLeD,HIGH);
+      digitalWrite(tabCanon[i].pinLeD,LED_ON);
       tabCanon[i].eEtatLed = CANON_LED_CLI_ON ;
       tabCanon[i].tempoLed = MAX_TEMPO_LED;
     }
@@ -285,20 +291,32 @@ void TEST_LED_ET_RELAYS()
 {
 // /* TEST DES LEDS et DES  RELAYS ==> OK 
   static int cmp = TIMER_500MS; // 50x 10ms = 0.5s
-  static int etat = 1;
-  if (cmp-- == 0)
-  { for (uint8_t i=0; i<NB_CANON; i++)   {
-    if(etat){
-      digitalWrite(tabCanon[i].pinLeD,HIGH);
-      digitalWrite(tabCanon[i].pinRelayCanon,LOW);
-    } else {
-      digitalWrite(tabCanon[i].pinLeD,LOW);
-      digitalWrite(tabCanon[i].pinRelayCanon,HIGH);
-        }
+  static int etat = 4;
+	if (cmp-- == 0)
+	{ 
+		for (uint8_t i=0; i<NB_CANON; i++)   
+		{
+			//Serial.print(tabCanon[i].pinRelayCanon);
+			//Serial.print(" ");
+			if(etat <= 0)
+			{
+				digitalWrite(tabCanon[i].pinLeD,LED_OFF);
+				digitalWrite(tabCanon[i].pinRelayCanon,RELAY_ON);
+				
+			} else {
+				digitalWrite(tabCanon[i].pinLeD,LED_ON);
+				digitalWrite(tabCanon[i].pinRelayCanon,RELAY_OFF);
+			}
+		}
+		
+		if(etat <= 0) {
+ 			etat = 4 ;
+		} else { 
+			etat--; 
+		}
+		cmp = TIMER_500MS;
+		//Serial.println("");
     }
-    etat = 1-etat;
-    cmp = TIMER_500MS;
-  }
 }
 
 /* ************************************************** */
@@ -311,10 +329,10 @@ void TEST_LED_ET_RELAYS_CHENILLARD()
   if (cmp-- == 0)
   {
 	  for (uint8_t i=0; i<NB_CANON; i++)   {
-		  digitalWrite(tabCanon[i].pinLeD,LOW);
-		  digitalWrite(tabCanon[i].pinRelayCanon,HIGH);
+		  digitalWrite(tabCanon[i].pinLeD,LED_OFF);
+		  digitalWrite(tabCanon[i].pinRelayCanon,RELAY_OFF);
 	  }
-		digitalWrite(tabCanon[pos].pinLeD,LOW);  digitalWrite(tabCanon[pos].pinRelayCanon,HIGH); 
+		digitalWrite(tabCanon[pos].pinLeD,LED_ON);  digitalWrite(tabCanon[pos].pinRelayCanon,RELAY_ON); 
 		pos++;
 		if (pos == 8)
 		{
