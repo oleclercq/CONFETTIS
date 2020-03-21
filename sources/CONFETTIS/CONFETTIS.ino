@@ -1,9 +1,8 @@
 /*  CANON A CONFETIS 
     CARTE ATMEGA 1656
-	loma.fr
 */
-
-#define DEBUG_MODE
+// #define _MODE_OLQ
+// #define DEBUG_MODE
 #define TIMER_500MS 100
 
 // ========================================================================
@@ -39,8 +38,12 @@ typedef struct 	{	ENUM_ETAT_CANON  eEtatCanon;      // Etat en cours.
 // ========================================================================
 // VARIABLES GLOBALES
 // ========================================================================
-//#define _MODE_OLQ
 #ifdef _MODE_OLQ
+ #define PIN_BT_RESET 	32
+ #define LED_OFF		HIGH
+ #define LED_ON		LOW
+ #define RELAY_ON	LOW
+ #define RELAY_OFF	HIGH
 ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									{CANON_OFF, CANON_LED_OFF, 34, 46, 3, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									{CANON_OFF, CANON_LED_OFF, 35, 45, 4, MAX_TEMPO_LED, MAX_TEMPO_RLY},
@@ -51,6 +54,11 @@ ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO
 									{CANON_OFF, CANON_LED_OFF, 40, 13, 9, MAX_TEMPO_LED, MAX_TEMPO_RLY}		// pro->offsetK ne doit pas d�passer ni egal � ENTREENUMERIQUE 19
 								} ;  
 #else
+ #define PIN_BT_RESET 	2
+ #define LED_ON		HIGH
+ #define LED_OFF	LOW
+ #define RELAY_ON	LOW
+ #define RELAY_OFF	HIGH
 //                                                              /----------- Colonne A affectation Num des pin pour les Bt poussoirs    
 //                                                              |   /------- Colonne B affectation Num des pin pour les LED    
 //                                                              |   |   /--  Colonne C affectation Num des pin pour le relay
@@ -185,7 +193,7 @@ void fnct_read_bt(int i)
   val = digitalRead(tabCanon[i].bpPin) ;
   if (!val) // detection appuie
   {
-    digitalWrite(tabCanon[i].pinRelayCanon,HIGH); // on active les cannons
+    digitalWrite(tabCanon[i].pinRelayCanon,RELAY_ON); // on active les cannons
     tabCanon[i].eEtatCanon = CANON_ON;
 
     digitalWrite(tabCanon[i].pinLeD,LED_ON); // on active les cannons
