@@ -12,7 +12,7 @@
 #define NB_CANON		8
 #define MAX_TEMPO_RLY	900 // en nb de 10ms
 #define MAX_TEMPO_LED	50	// en nb de 10ms
-#define PIN_BT_RESET 	32
+#define PIN_BT_RESET 	2
 
 #define LED_ON		HIGH
 #define LED_OFF		LOW
@@ -139,10 +139,10 @@ ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
 // SEULEMENT UNE SEULE FONCTION DOIT ETRE APPELE ICI
 // LES TROIS PREMIERES, C EST POUR DU TEST
 	
-	TEST_LED_ET_RELAYS_CHENILLARD();
+//	TEST_LED_ET_RELAYS_CHENILLARD();
 //  TEST_LED_ET_RELAYS(); //==> OK
-//   TEST_ENTREES();       //==> OK
-//  PGM_NORMAL();         //==> OK
+   TEST_ENTREES();       //==> OK
+//PGM_NORMAL();         //==> OK
 }
 
 /* ************************************************** */
@@ -282,7 +282,15 @@ void TEST_ENTREES()
     val = digitalRead(tabCanon[i].bpPin) ;
     digitalWrite(tabCanon[i].pinLeD,val);
     digitalWrite(tabCanon[i].pinRelayCanon,val);
+	Serial.print("bp_");
+	Serial.print(i);
+	Serial.print("(");
+	Serial.print(tabCanon[i].bpPin);
+	Serial.print(")=");
+	Serial.print(val);
+	Serial.print("   ");
   }
+  Serial.println("");
 }
 
 /* ************************************************** */
