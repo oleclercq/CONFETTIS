@@ -1,7 +1,7 @@
 /*  CANON A CONFETIS 
     CARTE ATMEGA 1656
 */
-// #define _MODE_OLQ
+//#define _MODE_OLQ
 // #define DEBUG_MODE
 #define TIMER_500MS 100
 
@@ -11,12 +11,7 @@
 #define NB_CANON		8
 #define MAX_TEMPO_RLY	900 // en nb de 10ms
 #define MAX_TEMPO_LED	50	// en nb de 10ms
-#define PIN_BT_RESET 	2
 
-#define LED_ON		HIGH
-#define LED_OFF		LOW
-#define RELAY_ON	LOW
-#define RELAY_OFF	HIGH
 
 // ========================================================================
 // DESFINIIONS DES TYPES      
@@ -40,10 +35,10 @@ typedef struct 	{	ENUM_ETAT_CANON  eEtatCanon;      // Etat en cours.
 // ========================================================================
 #ifdef _MODE_OLQ
  #define PIN_BT_RESET 	32
- #define LED_OFF		HIGH
- #define LED_ON		LOW
- #define RELAY_ON	LOW
- #define RELAY_OFF	HIGH
+ #define LED_ON			HIGH
+ #define LED_OFF		LOW
+ #define RELAY_ON		HIGH
+ #define RELAY_OFF		LOW
 ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									{CANON_OFF, CANON_LED_OFF, 34, 46, 3, MAX_TEMPO_LED, MAX_TEMPO_RLY},
 									{CANON_OFF, CANON_LED_OFF, 35, 45, 4, MAX_TEMPO_LED, MAX_TEMPO_RLY},
@@ -202,7 +197,7 @@ void fnct_read_bt(int i)
 }
 
 /* ************************************************** */
-// RECOPIE ENTRESS SUR SORTIES
+// LE CANON EST ON, on y passe plusieur fois avant de le passer a OFF
 /* ************************************************** */
 void fnct_canon_on(int i)
 {
@@ -213,7 +208,7 @@ void fnct_canon_on(int i)
             }
             else
             {
-                digitalWrite(tabCanon[i].pinRelayCanon,LOW); // on active les cannons
+                digitalWrite(tabCanon[i].pinRelayCanon,RELAY_OFF); // on FERME.
                 tabCanon[i].eEtatCanon = CANON_OFF; // Le passage a READY ne se fera que sur app du RESET
                 tabCanon[i].tempoRelay = MAX_TEMPO_RLY ;
                 tabCanon[i].eEtatLed   = CANON_LED_OFF ;
