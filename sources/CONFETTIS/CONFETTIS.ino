@@ -117,7 +117,7 @@ void setup()
     digitalWrite(tabCanon[i].pinLeD,LED_ON);
     tabCanon[i].eEtatLed = CANON_LED_CLI_OFF ;  // Prochain état
 	}
- 
+	pinMode(PIN_BT_RESET,INPUT_PULLUP); 
 
 //  ================================================================================
 //  PARAMETRAGE DU TIMER 1 16BIT
