@@ -56,14 +56,14 @@ ST_CANON tabCanon[NB_CANON] = 	{	{CANON_OFF, CANON_LED_OFF, 33, 53, 2, MAX_TEMPO
 //                                                              |   |   /--  Colonne C affectation Num des pin pour le relay
 //                                                              A   B   C
 ST_CANON tabCanon[NB_CANON] = 	{
-                                    {CANON_OFF, CANON_LED_OFF, 14,  4, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 1
-                                    {CANON_OFF, CANON_LED_OFF, 15,  5, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},   // Channel 2
-                                    {CANON_OFF, CANON_LED_OFF, 16,  6, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 3
-                                    {CANON_OFF, CANON_LED_OFF, 17,  7, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 4
-                                    {CANON_OFF, CANON_LED_OFF, 18,  8, 30, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 5
-                                    {CANON_OFF, CANON_LED_OFF, 19,  9, 32, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 6
-                                    {CANON_OFF, CANON_LED_OFF, 20, 10, 34, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 7
-                                    {CANON_OFF, CANON_LED_OFF, 21, 11, 36, MAX_TEMPO_LED, MAX_TEMPO_RLY}	// Channel 8
+                                    {CANON_OFF, CANON_LED_OFF, 23,  4, 22, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 1
+                                    {CANON_OFF, CANON_LED_OFF, 25,  5, 24, MAX_TEMPO_LED, MAX_TEMPO_RLY},   // Channel 2
+                                    {CANON_OFF, CANON_LED_OFF, 27,  6, 26, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 3
+                                    {CANON_OFF, CANON_LED_OFF, 29,  7, 28, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 4
+                                    {CANON_OFF, CANON_LED_OFF, 31,  8, 30, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 5
+                                    {CANON_OFF, CANON_LED_OFF, 33,  9, 32, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 6
+                                    {CANON_OFF, CANON_LED_OFF, 35, 10, 34, MAX_TEMPO_LED, MAX_TEMPO_RLY},	// Channel 7
+                                    {CANON_OFF, CANON_LED_OFF, 37, 11, 36, MAX_TEMPO_LED, MAX_TEMPO_RLY}	// Channel 8
 								} ;
 #endif
 
@@ -141,8 +141,8 @@ ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
 	
 //	TEST_LED_ET_RELAYS_CHENILLARD();
 //  TEST_LED_ET_RELAYS(); //==> OK
-   TEST_ENTREES();       //==> OK
-//PGM_NORMAL();         //==> OK
+//  TEST_ENTREES();       //==> OK
+	PGM_NORMAL();         //==> OK
 }
 
 /* ************************************************** */
