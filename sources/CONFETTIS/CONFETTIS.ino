@@ -89,7 +89,6 @@ ST_CANON tabCanon[NB_CANON] = 	{
 // ========================================================================
 void fnct_read_bt(int i) ;
 void fnct_canon_on(int i) ;
-void fnct_canon_off(int i) ;
 void fnct_canon_led_off(int i);
 void fnct_canon_led_on(int i);
 void fnct_canon_led_off_cli(int i);
@@ -123,7 +122,7 @@ void setup()
     tabCanon[i].eEtatCanon = CANON_READY ;
     
     digitalWrite(tabCanon[i].pinLeD,LED_OFF);
-    tabCanon[i].eEtatLed = CANON_LED_CLI_OFF ;  // Prochain état
+    tabCanon[i].eEtatLed = CANON_LED_OFF ;  // Prochain état
 	}
 	pinMode(PIN_BT_RESET,INPUT_PULLUP); 
 
@@ -178,7 +177,7 @@ void PGM_NORMAL()
         switch ( tabCanon[i].eEtatCanon) {
           case CANON_READY :  fnct_read_bt(i);   break ;
           case CANON_ON  :    fnct_canon_on(i);  break ;
-          case CANON_OFF :    fnct_canon_off(i);  break ;
+          case CANON_OFF :    break ;
           default :           break ;                                 
         }
       }
@@ -191,9 +190,9 @@ void PGM_NORMAL()
           // tous les connons passe en ready
           digitalWrite(tabCanon[i].pinRelayCanon,RELAY_OFF);
           tabCanon[i].eEtatCanon = CANON_READY;
-          
-          digitalWrite(tabCanon[i].pinLeD,LED_ON);
-          tabCanon[i].eEtatLed = CANON_LED_ON;
+          gChenillardDeDebut = true;
+          //digitalWrite(tabCanon[i].pinLeD,LED_ON);
+          //tabCanon[i].eEtatLed = CANON_LED_ON;
         }
     }
 }
@@ -233,13 +232,12 @@ void fnct_canon_on(int i)
                 tabCanon[i].eEtatLed   = CANON_LED_OFF ;
             }
             // on fait clignoter les led
-            // c'est la fin du clignotement de la led qui fait arreter le canon
             switch( tabCanon[i].eEtatLed)
             {
               case CANON_LED_OFF :      fnct_canon_led_off(i);      break;
               case CANON_LED_ON  :      fnct_canon_led_on(i);       break;
-              case CANON_LED_CLI_ON :   fnct_canon_led_on_cli(i);  break;
-              case CANON_LED_CLI_OFF :  fnct_canon_led_off_cli(i);   break;
+              case CANON_LED_CLI_ON :   fnct_canon_led_on_cli(i);  break;   // tempo pour la duree de la led on
+              case CANON_LED_CLI_OFF :  fnct_canon_led_off_cli(i);   break; // tempo pour la duree de la led OFF
               default:                  break;
             }
 }
@@ -286,12 +284,6 @@ void fnct_canon_led_on_cli(int i)
     
 }
 
-/* ************************************************** */
-// CANON OFF
-/* ************************************************** */
-void fnct_canon_off(int i)
-{
-}
 
 /* ************************************************** */
 // RECOPIE ENTRESS SUR SORTIES
@@ -417,10 +409,14 @@ void PGM_CHENILLARD()
 		// MODE_REMPLIR
 		else //  if (mode == MODE_REMPLIR)
 		{
-			digitalWrite(tabCanon[pos].pinLeD,LED_ON);  
+			digitalWrite(tabCanon[pos].pinLeD,LED_ON); 
+			
 			pos++;
 			if(pos == 8)
 			{
+				for (uint8_t i=0; i<NB_CANON; i++)   {
+					tabCanon[pos].eEtatLed = CANON_LED_ON;
+				}
 				pos	= 0;
 				mode = MODE_ALLER;
 				gChenillardDeDebut = false ;		// le chenillard de début est terminé
