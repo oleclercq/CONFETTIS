@@ -3,7 +3,14 @@
 */
 //#define _MODE_OLQ
 // #define DEBUG_MODE
+#define TIMER_050MS 10
+#define TIMER_100MS 20
+#define TIMER_150MS 30
+#define TIMER_200MS 40	
+#define TIMER_250MS 50
 #define TIMER_500MS 100
+#define TIMER_CHENILARD_MS	TIMER_050MS
+
 
 // ========================================================================
 // DESFINIIONS
@@ -11,6 +18,11 @@
 #define NB_CANON		8
 #define MAX_TEMPO_RLY	900 // en nb de 10ms
 #define MAX_TEMPO_LED	50	// en nb de 10ms
+
+// C'est define sont utiliés pour le chenilard du début
+#define MODE_ALLER		0
+#define MODE_RETOUR		1
+#define MODE_REMPLIR	2
 
 
 // ========================================================================
@@ -33,6 +45,7 @@ typedef struct 	{	ENUM_ETAT_CANON  eEtatCanon;      // Etat en cours.
 // ========================================================================
 // VARIABLES GLOBALES
 // ========================================================================
+bool gChenillardDeDebut = true ;
 #ifdef _MODE_OLQ
  #define PIN_BT_RESET 	32
  #define LED_ON			HIGH
@@ -109,7 +122,7 @@ void setup()
     digitalWrite(tabCanon[i].pinRelayCanon,RELAY_OFF);
     tabCanon[i].eEtatCanon = CANON_READY ;
     
-    digitalWrite(tabCanon[i].pinLeD,LED_ON);
+    digitalWrite(tabCanon[i].pinLeD,LED_OFF);
     tabCanon[i].eEtatLed = CANON_LED_CLI_OFF ;  // Prochain état
 	}
 	pinMode(PIN_BT_RESET,INPUT_PULLUP); 
@@ -128,7 +141,7 @@ void setup()
 }
 
 /* ************************************************************************ */
-/* PGM Principal, lecture en permanance les entr�es
+/* PGM Principal, lecture en permanance les entrees
 /* ************************************************************************ */
 void loop()
 {
@@ -141,15 +154,21 @@ ISR(TIMER1_COMPA_vect) // 16 bit timer 1 compare 1A match
 {
 // SEULEMENT UNE SEULE FONCTION DOIT ETRE APPELE ICI
 // LES TROIS PREMIERES, C EST POUR DU TEST
-	
 //	TEST_LED_ET_RELAYS_CHENILLARD();
 //  TEST_LED_ET_RELAYS(); //==> OK
 //  TEST_ENTREES();       //==> OK
-	PGM_NORMAL();         //==> OK
+	if (gChenillardDeDebut){
+		PGM_CHENILLARD();
+	}else{
+		PGM_NORMAL();         //==> OK
+	}
 }
 
+
+
+
 /* ************************************************** */
-// RECOPIE ENTRESS SUR SORTIES
+// PROGRAMME PRINCIPAL
 /* ************************************************** */
 void PGM_NORMAL()
 {
@@ -353,3 +372,63 @@ void TEST_LED_ET_RELAYS_CHENILLARD()
 		cmp = TIMER_500MS;
 	}
 }
+
+/* ************************************************** */
+// FAIT UN CHENILARD de Décoration pour remplir les LED 
+// cette fonction est appelée par le timer toutes les 10ms
+// on temporise pour faire un changement de led toutes les 250ms
+/* ************************************************** */
+void PGM_CHENILLARD()
+{
+	static int cmp = TIMER_CHENILARD_MS; // 50x 10ms = 0.5s
+	static int pos = 0;
+	static int mode = MODE_ALLER;
+	if (cmp-- == 0)
+	{
+		// MODE_ALLER
+		if (mode == MODE_ALLER)
+		{
+			for (uint8_t i=0; i<NB_CANON; i++)   {
+				digitalWrite(tabCanon[i].pinLeD,LED_OFF);
+			}
+			digitalWrite(tabCanon[pos].pinLeD,LED_ON); 
+			pos++;
+			if (pos == 8)
+			{
+				pos	= 6;
+				mode = MODE_RETOUR;
+			}
+		}
+		
+		// MODE_RETOUR
+		else if (mode == MODE_RETOUR)
+		{
+			for (uint8_t i=0; i<NB_CANON; i++)   {
+				digitalWrite(tabCanon[i].pinLeD,LED_OFF);
+			}
+			digitalWrite(tabCanon[pos].pinLeD,LED_ON); 
+			if (pos-- == 0)
+			{
+				pos	= 1;
+				mode = MODE_REMPLIR;
+			}
+		}
+	
+		// MODE_REMPLIR
+		else //  if (mode == MODE_REMPLIR)
+		{
+			digitalWrite(tabCanon[pos].pinLeD,LED_ON);  
+			pos++;
+			if(pos == 8)
+			{
+				pos	= 0;
+				mode = MODE_ALLER;
+				gChenillardDeDebut = false ;		// le chenillard de début est terminé
+			}
+		}
+		cmp = TIMER_CHENILARD_MS;
+	}
+	
+	
+}
+
